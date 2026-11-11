@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إلى حبيبتي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700;800&family=Reem+Kufi:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f051d 0%, #290a29 50%, #1a0011 100%);
+            --accent-color: #ff2a75;
+            --accent-glow: #ff4785;
+            --gold: #ffd700;
+            --text-light: #fff0f5;
+            --glass-bg: rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Floating background hearts */
+        .bg-hearts {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .bg-heart {
+            position: absolute;
+            color: rgba(255, 42, 117, 0.25);
+            animation: floatUp linear infinite;
+            filter: blur(1px);
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(110vh) scale(0.5) rotate(0deg);
+                opacity: 0;
+            }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% {
+                transform: translateY(-10vh) scale(1.2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Container */
+        .container {
+            width: 90%;
+            max-width: 550px;
+            z-index: 10;
+            position: relative;
+            padding: 20px 10px;
+        }
+
+        /* Glass Card */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 35px 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+                        0 0 30px rgba(255, 42, 117, 0.2);
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Lock Screen */
+        .lock-icon {
+            font-size: 55px;
+            margin-bottom: 15px;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--accent-color)); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 25px var(--accent-color)); }
+        }
+
+        .lock-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #ffe6f0;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .pass-input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .pass-input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 20px;
+            text-align: center;
+            border-radius: 50px;
+            border: 2px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            outline: none;
+            letter-spacing: 2px;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .pass-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px rgba(255, 42, 117, 0.4);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-unlock {
+            background: linear-gradient(45deg, #ff2a75, #ff758c);
+            color: white;
+            border: none;
+            padding: 15px 45px;
+            font-size: 18px;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(255, 42, 117, 0.4);
+            transition: all 0.3s ease;
+            width: 100%;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .btn-unlock:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 42, 117, 0.6);
+        }
+
+        .btn-unlock:active {
+            transform: translateY(1px);
+        }
+
+        .error-msg {
+            color: #ff4d4d;
+            font-size: 14px;
+            margin-top: 15px;
+            min-height: 20px;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        .shake {
+            animation: shake 0.5s linear;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        /* Content Screen (Hidden by default) */
+        #content-screen {
+            display: none;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.8s ease;
+        }
+
+        #content-screen.active {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .main-love-title {
+            font-family: 'Reem Kufi', cursive;
+            font-size: 64px;
+            color: #fff;
+            text-shadow: 0 0 10px #ff2a75,
+                         0 0 20px #ff2a75,
+                         0 0 40px #ff2a75,
+                         0 0 80px #ff2a75;
+            margin-bottom: 20px;
+            animation: glow 2s ease-in-out infinite alternate;
+            letter-spacing: 2px;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #fff, 0 0 20px #ff2a75, 0 0 30px #ff2a75;
+            }
+            to {
+                text-shadow: 0 0 20px #fff, 0 0 30px #ff4785, 0 0 50px #ff4785, 0 0 70px #ff4785;
+            }
+        }
+
+        /* Letter Box */
+        .letter-box {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: right;
+            line-height: 2.1;
+            font-size: 17px;
+            color: #fff6f9;
+            max-height: 50vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-color) rgba(0,0,0,0.2);
+        }
+
+        .letter-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .letter-box::-webkit-scrollbar-thumb {
+            background-color: var(--accent-color);
+            border-radius: 10px;
+        }
+
+        .date-badge {
+            display: inline-block;
+            background: rgba(255, 42, 117, 0.2);
+            border: 1px solid var(--accent-color);
+            color: var(--gold);
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .letter-highlight {
+            font-family: 'Amiri', serif;
+            font-size: 24px;
+            color: #ff6699;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 102, 153, 0.5);
+            padding-top: 15px;
+            border-top: 1px linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
+
+        /* Timer Counter */
+        .counter-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .counter-title {
+            font-size: 14px;
+            color: #d1b3c4;
+            margin-bottom: 12px;
+        }
+
+        .counter-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .counter-item {
+            background: rgba(255, 42, 117, 0.15);
+            border: 1px solid rgba(255, 42, 117, 0.3);
+            border-radius: 15px;
+            padding: 10px 5px;
+        }
+
+        .counter-num {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .counter-label {
+            font-size: 11px;
+            color: #ffb3d1;
+        }
+
+        .heart-btn {
+            background: none;
+            border: none;
+            font-size: 40px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.2s;
+            outline: none;
+        }
+
+        .heart-btn:active {
+            transform: scale(1.4);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Floating Hearts -->
+    <div class="bg-hearts" id="bgHearts"></div>
+
+    <div class="container">
+        
+        <!-- LOCK SCREEN -->
+        <div class="card" id="lock-screen">
+            <div class="lock-icon">🔒❤️</div>
+            <div class="lock-title">أدخل التاريخ المميز لفتح الرسالة</div>
+            
+            <div class="pass-input-group">
+                <input type="text" id="passInput" class="pass-input" placeholder="10-10-2026" autocomplete="off">
+            </div>
+
+            <button class="btn-unlock" onclick="checkPassword()">فتح القفل ✨</button>
+            <div class="error-msg" id="errorMsg"></div>
+        </div>
+
+        <!-- CONTENT SCREEN -->
+        <div class="card" id="content-screen">
+            <div class="date-badge">10 / 10 / 2026 💖</div>
+            <h1 class="main-love-title">بحبك</h1>
+
+            <div class="letter-box">
+                في 11/11 بتمنى من كل قلبي إننا نفضل مع بعض وإن الأيام الجاية تكون أحلى لينا وإن مهما قابلتنا ظروف أو حصل بينا اختلاف نعرف نفهم بعض ونعدي أي حاجة وإحنا متمسكين ببعض مش عايز من الدنيا حاجات كتير كل اللي نفسي فيه إننا نفضل سبب حلو في حياة بعض ونفضل نختار بعض كل يوم من جديد.
+                <br><br>
+                عايز أكون الشخص اللي تقدر تحكيله من غير ما تخاف من حكم أو لوم واللي تلاقي عنده اهتمام واحتواءً واللي يفرح لفرحتك ويشجعك في كل خطوة.
+                <br><br>
+                وعايزاك تعرّفي إنك تستاهلي كل الحب اللي ف الدنيا وإن وجودك عندي مش حاجة عادية أبدا شكرا إنك في حياتي شكرا على كل لحظة حلوة وكل كلمة فرجتيني بيها وكل مرة خلتيني أضحك من قلبي ويارب أشوفك دايما مبسوطه ومرتاحه وناجحا وأكون موجود في كل لحظة حلوة في حياتك يحبيب عمري عارف ان كلامي ممكن يبق متلغبط بس عايزاك بعرفي ان مفيش ايي رساله ف الدتياا. د تقدر تو
+                
+                <div class="letter-highlight">
+                    • اه اي أنا بحبك •
+                </div>
+            </div>
+
+            <div class="counter-section">
+                <div class="counter-title">مر على يومنا المميز:</div>
+                <div class="counter-grid">
+                    <div class="counter-item">
+                        <div class="counter-num" id="days">0</div>
+                        <div class="counter-label">يوم</div>
+                    </div>
+                    <div class="counter-item">
+                        <div class="counter-num" id="hours">0</div>
+                        <div class="counter-label">ساعة</div>
+                    </div>
+                    <div class="counter-item">
+                        <div class="counter-num" id="minutes">0</div>
+                        <div class="counter-label">دقيقة</div>
+                    </div>
+                    <div class="counter-item">
+                        <div class="counter-num" id="seconds">0</div>
+                        <div class="counter-label">ثانية</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="heart-btn" onclick="triggerConfetti()">💖</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Generate BG Floating Hearts
+        const heartsContainer = document.getElementById('bgHearts');
+        const heartSymbols = ['❤️', '💖', '💗', '💕', '🌸', '✨'];
+        
+        for (let i = 0; i < 25; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'bg-heart';
+            heart.innerText = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = (Math.random() * 8 + 6) + 's';
+            heart.style.animationDelay = (Math.random() * 5) + 's';
+            heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+            heartsContainer.appendChild(heart);
+        }
+
+        // Check Password Logic
+        function checkPassword() {
+            const input = document.getElementById('passInput').value.trim();
+            const lockCard = document.getElementById('lock-screen');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            // Clean format (supports 10-10-2026, 10/10/2026, 10102026)
+            const cleanInput = input.replace(/[\/\-\.\s]/g, '');
+            
+            if (cleanInput === '10102026' || input === '10-10-2026' || input === '10/10/2026') {
+                errorMsg.innerText = '';
+                lockCard.style.opacity = '0';
+                lockCard.style.transform = 'scale(0.8)';
+                
+                setTimeout(() => {
+                    lockCard.style.display = 'none';
+                    const contentScreen = document.getElementById('content-screen');
+                    contentScreen.classList.add('active');
+                    triggerConfetti();
+                    startCounter();
+                    playHeartbeatAudio();
+                }, 500);
+            } else {
+                errorMsg.innerText = 'التاريخ غير صحيح.. جرب تاني ❤️';
+                lockCard.classList.add('shake');
+                setTimeout(() => {
+                    lockCard.classList.remove('shake');
+                }, 500);
+            }
+        }
+
+        // Enter Key Listener
+        document.getElementById('passInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+
+        // Confetti Effect
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#ff2a75', '#ff758c', '#ffd700', '#ffffff']
+                });
+            }
+        }
+
+        // Date Counter (From 10-10-2026)
+        function startCounter() {
+            const targetDate = new Date('2026-10-10T00:00:00');
+            
+            function update() {
+                const now = new Date();
+                let diff = Math.abs(now - targetDate);
+                
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                diff -= days * (1000 * 60 * 60 * 24);
+                
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                diff -= hours * (1000 * 60 * 60);
+                
+                const minutes = Math.floor(diff / (1000 * 60));
+                diff -= minutes * (1000 * 60);
+                
+                const seconds = Math.floor(diff / 1000);
+                
+                document.getElementById('days').innerText = days;
+                document.getElementById('hours').innerText = hours;
+                document.getElementById('minutes').innerText = minutes;
+                document.getElementById('seconds').innerText = seconds;
+            }
+            
+            update();
+            setInterval(update, 1000);
+        }
+
+        // Soft Audio synth for magical feeling
+        function playHeartbeatAudio() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                
+                const notes = [261.63, 329.63, 392.00, 523.25]; // C E G C
+                notes.forEach((freq, index) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime + index * 0.2);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + index * 0.2 + 1);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + index * 0.2);
+                    osc.stop(ctx.currentTime + index * 0.2 + 1);
+                });
+            } catch(e) {}
+        }
+    </script>
+</body>
+</html>
